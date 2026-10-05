@@ -130,6 +130,12 @@ public class CapsuleToyListener implements Listener{
       }
       event.setCancelled(true);
 
+      String toyName = capsuletoy.getDatabase().getCapsuleToyName(signLoc);
+      if (CapsuleToyUtility.acceptsStackTicket(capsuletoy, toyName)) {
+        stackTicketProc(p, signLoc);
+        return;
+      }
+
       ItemStack ticket = p.getInventory().getItemInMainHand();
       if( !ticket.getType().equals(Material.PAPER) ) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("hold-the-ticket")));
@@ -167,13 +173,58 @@ public class CapsuleToyListener implements Listener{
         return;
       }
 
-      ItemStack sendItem = pickItem.clone();
-      p.getInventory().addItem(sendItem);
-      CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("found-pick")));
+      givePrize(p, pickItem);
 
     } catch (Exception e){
       CapsuleToyUtility.logStackTrace(e);
     }
+  }
+
+  /**
+   * 重なる券を 1 枚消費し、チェストの枠を 1 つ渡す。コード付きの券とは別。
+   */
+  private void stackTicketProc(Player p, Location signLoc) {
+    try {
+      ItemStack ticket = p.getInventory().getItemInMainHand();
+      if (!CapsuleToyUtility.isStackTicket(capsuletoy, ticket)) {
+        CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("hold-the-ticket")));
+        return;
+      }
+
+      Chest chest = capsuletoy.getDatabase().getCapsuleToyChest(signLoc);
+      if (chest == null) {
+        CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-chest1")));
+        CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-chest2")));
+        return;
+      }
+
+      int amount = ticket.getAmount();
+      if (amount <= 1) {
+        p.getInventory().setItemInMainHand(null);
+      } else {
+        ticket.setAmount(amount - 1);
+      }
+
+      Inventory iv = chest.getInventory();
+      int pick = new Random().nextInt(iv.getSize());
+      ItemStack pickItem = iv.getItem(pick);
+      if (pickItem == null) {
+        CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-pick")));
+        return;
+      }
+
+      givePrize(p, pickItem);
+    } catch (Exception e) {
+      CapsuleToyUtility.logStackTrace(e);
+    }
+  }
+
+  private void givePrize(Player player, ItemStack prize) {
+    boolean stored = CapsuleToyUtility.giveOrDrop(player, prize);
+    String key = stored ? "found-pick" : "dropped-pick";
+    String fallback = stored ? "賞品をインベントリに送りました。" : "インベントリが一杯なので、足元に落としました。";
+    String message = capsuletoy.getConfig().getString(key, fallback);
+    CapsuleToyUtility.sendMessage(player, ChatColor.translateAlternateColorCodes('&', message));
   }
 
   /**

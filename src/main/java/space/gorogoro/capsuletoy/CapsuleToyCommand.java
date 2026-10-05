@@ -156,6 +156,47 @@ public class CapsuleToyCommand {
   }
 
   /**
+   * 重なる infernalカプセルトイ券を渡す。1 から 64 枚。
+   * @return boolean true:Success false:Failure
+   */
+  public boolean stackTicket() {
+    if (args.length < 2 || args.length > 3) {
+      return false;
+    }
+
+    int amount = 1;
+    if (args.length == 3) {
+      try {
+        amount = Integer.parseInt(args[2]);
+      } catch (NumberFormatException ex) {
+        CapsuleToyUtility.sendMessage(sender, "枚数は 1 から 64 です。");
+        return true;
+      }
+    }
+    if (amount < 1 || amount > 64) {
+      CapsuleToyUtility.sendMessage(sender, "枚数は 1 から 64 です。");
+      return true;
+    }
+
+    ArrayList<Player> targets = CapsuleToyUtility.getTarget(capsuletoy, args[1], sender);
+    if (targets.isEmpty()) {
+      CapsuleToyUtility.sendMessage(sender, "プレイヤーが見つかりません。");
+      return true;
+    }
+
+    ItemStack ticket = CapsuleToyUtility.createStackTicket(capsuletoy, amount);
+    for (Player p : targets) {
+      boolean stored = CapsuleToyUtility.giveOrDrop(p, ticket.clone());
+      if (stored) {
+        CapsuleToyUtility.sendMessage(sender, "infernalカプセルトイ券を渡しました。 player_name=" + p.getDisplayName() + " amount=" + amount);
+      } else {
+        CapsuleToyUtility.sendMessage(sender, "インベントリが一杯なので足元に落としました。 player_name=" + p.getDisplayName() + " amount=" + amount);
+      }
+    }
+    return true;
+  }
+
+  /**
    * Processing of command reload.
    * @return boolean true:Success false:Failure
    */

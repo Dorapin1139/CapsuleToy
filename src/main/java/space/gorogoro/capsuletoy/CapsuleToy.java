@@ -145,6 +145,12 @@ public class CapsuleToy extends JavaPlugin{
           }
           break;
 
+        case "stackticket":
+          if((sender instanceof BlockCommandSender) || (sender instanceof ConsoleCommandSender) || sender.isOp()) {
+            hideUseageFlag = command.stackTicket();
+          }
+          break;
+
         case "enable":
           if(sender.isOp()) {
             hideUseageFlag = command.enable();

@@ -345,6 +345,33 @@ public class CapsuleToyDatabase {
   }
 
   /**
+   * 看板の位置からカプセルトイの登録名を返す。
+   * @param Location signLoc
+   * @return String|null capsuletoy_name
+   */
+  public String getCapsuleToyName(Location signLoc) {
+    PreparedStatement prepStmt = null;
+    ResultSet rs = null;
+    try {
+      prepStmt = getCon().prepareStatement("SELECT capsuletoy_name FROM capsuletoy WHERE world_name=? AND sign_x=? AND sign_y=? AND sign_z=?");
+      prepStmt.setString(1, signLoc.getWorld().getName());
+      prepStmt.setInt(2, signLoc.getBlockX());
+      prepStmt.setInt(3, signLoc.getBlockY());
+      prepStmt.setInt(4, signLoc.getBlockZ());
+      rs = prepStmt.executeQuery();
+      if (rs.next()) {
+        return rs.getString(1);
+      }
+    } catch (SQLException e) {
+      CapsuleToyUtility.logStackTrace(e);
+    } finally {
+      closeRs(rs);
+      closePrepStmt(prepStmt);
+    }
+    return null;
+  }
+
+  /**
    * Get capsuletoy id
    * @param Location loc
    * @return Integer|null CapsuleToy id.

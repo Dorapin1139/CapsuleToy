@@ -13,3 +13,10 @@ not-found-chest1: "カプセルトイのチェストが見つかりません。"
 not-found-chest2: "/capsuletoy modify <capsuletoy_name>でチェストをセットしてください。"
 not-found-pick: "ハズレました。"
 found-pick: "賞品をインベントリに送りました。"
+dropped-pick: "インベントリが一杯なので、足元に落としました。"
+stack-ticket-display-name: "&d&linfernalカプセルトイ券"
+stack-ticket-lore1: "&7infernalカプセルトイで使えます。"
+stack-ticket-lore2: "&7ランダムなinfernalmobsのアイテムと交換できます。"
+stack-ticket-lore3: "&7一部出ないアイテムもあります。"
+stack-ticket-names:
+  - infernal

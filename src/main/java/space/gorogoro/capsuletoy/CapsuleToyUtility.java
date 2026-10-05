@@ -3,15 +3,20 @@ package space.gorogoro.capsuletoy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -26,6 +31,12 @@ import org.bukkit.plugin.Plugin;
 public class CapsuleToyUtility {
 
   protected static final String NUMALPHA = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  public static final String DEFAULT_STACK_TICKET_NAME = "&d&linfernalカプセルトイ券";
+  public static final String[] DEFAULT_STACK_TICKET_LORE = new String[] {
+    "&7infernalカプセルトイで使えます。",
+    "&7ランダムなinfernalmobsのアイテムと交換できます。",
+    "&7一部出ないアイテムもあります。"
+  };
 
   /**
    * Output stack trace to log file.
@@ -188,5 +199,116 @@ public class CapsuleToyUtility {
       }
     }
     return latestPlayer;
+  }
+
+  public static String stackTicketName(CapsuleToy capsuletoy) {
+    String name = capsuletoy.getConfig().getString("stack-ticket-display-name");
+    if (name == null || name.trim().isEmpty()) {
+      return DEFAULT_STACK_TICKET_NAME;
+    }
+    return name;
+  }
+
+  public static List<String> stackTicketLore(CapsuleToy capsuletoy) {
+    ArrayList<String> lore = new ArrayList<String>();
+    for (int i = 0; i < DEFAULT_STACK_TICKET_LORE.length; i++) {
+      String line = capsuletoy.getConfig().getString("stack-ticket-lore" + (i + 1));
+      if (line == null || line.trim().isEmpty()) {
+        line = DEFAULT_STACK_TICKET_LORE[i];
+      }
+      lore.add(line);
+    }
+    return lore;
+  }
+
+  // 看板の名前がこの一覧にあるときだけ、重なる券を受け付ける。設定が無いときは infernal
+  public static boolean acceptsStackTicket(CapsuleToy capsuletoy, String toyName) {
+    if (toyName == null) {
+      return false;
+    }
+    List<String> names;
+    if (!capsuletoy.getConfig().contains("stack-ticket-names")) {
+      names = new ArrayList<String>();
+      names.add("infernal");
+    } else {
+      names = capsuletoy.getConfig().getStringList("stack-ticket-names");
+    }
+    for (String entry : names) {
+      if (entry != null && entry.equalsIgnoreCase(toyName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static ItemStack createStackTicket(CapsuleToy capsuletoy, int amount) {
+    ItemStack ticket = new ItemStack(Material.PAPER, amount);
+    ItemMeta meta = ticket.getItemMeta();
+    meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', stackTicketName(capsuletoy)));
+    ArrayList<String> lore = new ArrayList<String>();
+    for (String line : stackTicketLore(capsuletoy)) {
+      lore.add(ChatColor.translateAlternateColorCodes('&', line));
+    }
+    meta.setLore(lore);
+    ticket.setItemMeta(meta);
+    return ticket;
+  }
+
+  public static boolean isStackTicket(CapsuleToy capsuletoy, ItemStack ticket) {
+    if (ticket == null || ticket.getType() != Material.PAPER || !ticket.hasItemMeta()) {
+      return false;
+    }
+    ItemMeta meta = ticket.getItemMeta();
+    if (meta == null || !meta.hasDisplayName() || !meta.hasLore()) {
+      return false;
+    }
+    List<String> lore = meta.getLore();
+    List<String> expected = stackTicketLore(capsuletoy);
+    if (lore == null || lore.size() != expected.size()) {
+      return false;
+    }
+    if (!visibleText(meta.getDisplayName()).equals(visibleText(stackTicketName(capsuletoy)))) {
+      return false;
+    }
+    for (int i = 0; i < expected.size(); i++) {
+      if (!visibleText(lore.get(i)).equals(visibleText(expected.get(i)))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // 入る余地が束の個数以上あるときだけインベントリへ入れる。足りなければ束ごと足元へ落とす
+  public static boolean giveOrDrop(Player player, ItemStack item) {
+    ItemStack clone = item.clone();
+    if (hasEnoughSpace(player, clone)) {
+      player.getInventory().addItem(clone);
+      return true;
+    }
+    World world = player.getWorld();
+    if (world != null) {
+      world.dropItemNaturally(player.getLocation(), clone);
+    }
+    return false;
+  }
+
+  public static boolean hasEnoughSpace(Player player, ItemStack item) {
+    int maxStack = item.getMaxStackSize();
+    int space = 0;
+    for (ItemStack invItem : player.getInventory().getStorageContents()) {
+      if (invItem == null) {
+        space += maxStack;
+      } else if (invItem.isSimilar(item)) {
+        space += maxStack - invItem.getAmount();
+      }
+    }
+    return space >= item.getAmount();
+  }
+
+  private static String visibleText(String text) {
+    if (text == null) {
+      return "";
+    }
+    return ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', text));
   }
 }
