@@ -1,5 +1,6 @@
 package space.gorogoro.capsuletoy;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -243,5 +245,67 @@ public class CapsuleToyUtility {
       }
     }
     return space >= item.getAmount();
+  }
+
+  private static YamlConfiguration fileConfig;
+  private static long fileStamp = Long.MIN_VALUE;
+
+  // config.yml に書いてあればその文。無いときは、ほかの文が日本語なら日本語、それ以外は英語
+  public static String configMessage(CapsuleToy plugin, String key) {
+    YamlConfiguration file = readConfigFile(plugin);
+    if (file.contains(key)) {
+      String value = file.getString(key);
+      if (value != null) {
+        return value;
+      }
+    }
+    if (usesJapanese(file)) {
+      if ("found-pick".equals(key)) {
+        return "賞品をインベントリに送りました。";
+      }
+      if ("dropped-pick".equals(key)) {
+        return "インベントリが一杯なので、足元に落としました。";
+      }
+    }
+    if ("found-pick".equals(key)) {
+      return "Sent the prize to the inventory.";
+    }
+    if ("dropped-pick".equals(key)) {
+      return "Your inventory was full, so the prize was dropped at your feet.";
+    }
+    return "";
+  }
+
+  private static YamlConfiguration readConfigFile(CapsuleToy plugin) {
+    File file = new File(plugin.getDataFolder(), "config.yml");
+    long stamp = file.lastModified();
+    if (fileConfig == null || stamp != fileStamp) {
+      fileConfig = YamlConfiguration.loadConfiguration(file);
+      fileStamp = stamp;
+    }
+    return fileConfig;
+  }
+
+  private static boolean usesJapanese(YamlConfiguration file) {
+    String[] samples = new String[] {"hold-the-ticket", "ticket-display-name", "ticket-lore1", "found-pick"};
+    for (int i = 0; i < samples.length; i++) {
+      String text = file.getString(samples[i]);
+      if (text != null && hasJapanese(text)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasJapanese(String text) {
+    for (int i = 0; i < text.length(); i++) {
+      Character.UnicodeBlock block = Character.UnicodeBlock.of(text.charAt(i));
+      if (block == Character.UnicodeBlock.HIRAGANA
+          || block == Character.UnicodeBlock.KATAKANA
+          || block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
+        return true;
+      }
+    }
+    return false;
   }
 }

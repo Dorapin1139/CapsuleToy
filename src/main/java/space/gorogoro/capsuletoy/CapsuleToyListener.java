@@ -178,8 +178,7 @@ public class CapsuleToyListener implements Listener{
   private void givePrize(Player player, ItemStack prize) {
     boolean stored = CapsuleToyUtility.giveOrDrop(player, prize);
     String key = stored ? "found-pick" : "dropped-pick";
-    String fallback = stored ? "賞品をインベントリに送りました。" : "インベントリが一杯なので、足元に落としました。";
-    String message = capsuletoy.getConfig().getString(key, fallback);
+    String message = CapsuleToyUtility.configMessage(capsuletoy, key);
     CapsuleToyUtility.sendMessage(player, ChatColor.translateAlternateColorCodes('&', message));
   }
 
