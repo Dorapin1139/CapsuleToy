@@ -150,14 +150,19 @@ public class CapsuleToyListener implements Listener{
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-ticket-code")));
         return;
       }
+      String signName = capsuletoy.getDatabase().getCapsuleToyName(signLoc);
       if(!boundName.isEmpty()) {
-        String signName = capsuletoy.getDatabase().getCapsuleToyName(signLoc);
         if(!boundName.equals(signName)) {
           String message = CapsuleToyUtility.configMessage(capsuletoy, "wrong-capsule");
           message = message.replace("{0}", boundName);
           CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));
           return;
         }
+      } else if("infernal".equals(signName)) {
+        String message = CapsuleToyUtility.configMessage(capsuletoy, "needs-named-ticket");
+        message = message.replace("{0}", signName);
+        CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));
+        return;
       }
 
       Chest chest = capsuletoy.getDatabase().getCapsuleToyChest(signLoc);

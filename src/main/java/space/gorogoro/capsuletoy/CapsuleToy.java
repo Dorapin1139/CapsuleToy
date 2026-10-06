@@ -37,7 +37,7 @@ public class CapsuleToy extends JavaPlugin{
     return database;
   }
 
-  // 番号だけの券。どの看板でも使える。所持品へは入れない
+  // 番号だけの券。infernal 以外の看板で使える。所持品へは入れない
   public ItemStack createCodedTicket() {
     return CapsuleToyUtility.createCodedTicket(this, null);
   }

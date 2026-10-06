@@ -278,6 +278,9 @@ public class CapsuleToyUtility {
       if ("wrong-capsule".equals(key)) {
         return "この券は {0} でしか使えません。";
       }
+      if ("needs-named-ticket".equals(key)) {
+        return "このカプセルトイは、{0} の券だけで使えます。";
+      }
     }
     if ("found-pick".equals(key)) {
       return "Sent the prize to the inventory.";
@@ -287,6 +290,9 @@ public class CapsuleToyUtility {
     }
     if ("wrong-capsule".equals(key)) {
       return "This ticket can only be used at {0}.";
+    }
+    if ("needs-named-ticket".equals(key)) {
+      return "This capsule toy accepts only a {0} ticket.";
     }
     return "";
   }
