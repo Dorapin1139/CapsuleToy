@@ -196,9 +196,15 @@ public class CapsuleToyUtility {
     return latestPlayer;
   }
 
-  // データベースに番号を作って、コード付きの券を 1 枚返す。所持品へは入れない
-  public static ItemStack createCodedTicket(CapsuleToy capsuletoy) {
-    String ticketCode = capsuletoy.getDatabase().getTicket();
+  // データベースに番号を作って、コード付きの券を 1 枚返す。名前がある券は、その看板でしか使えない
+  public static ItemStack createCodedTicket(CapsuleToy capsuletoy, String capsuleName) {
+    if (capsuleName != null && capsuleName.isEmpty()) {
+      capsuleName = null;
+    }
+    if (capsuleName != null && !capsuleName.matches("[0-9A-Za-z_]+")) {
+      return null;
+    }
+    String ticketCode = capsuletoy.getDatabase().getTicket(capsuleName);
     if (ticketCode == null) {
       return null;
     }
@@ -215,6 +221,9 @@ public class CapsuleToyUtility {
     lore.add(ChatColor.translateAlternateColorCodes('&', lore1 == null ? "" : lore1));
     lore.add(ChatColor.translateAlternateColorCodes('&', lore2 == null ? "" : lore2));
     lore.add(String.format(CapsuleToyCommand.PREFIX_TICKET_CODE + "%s", ticketCode));
+    if (capsuleName != null) {
+      lore.add(ChatColor.GRAY + capsuleName);
+    }
     meta.setLore(lore);
     ticket.setItemMeta(meta);
     return ticket;
@@ -266,12 +275,18 @@ public class CapsuleToyUtility {
       if ("dropped-pick".equals(key)) {
         return "インベントリが一杯なので、足元に落としました。";
       }
+      if ("wrong-capsule".equals(key)) {
+        return "この券は {0} でしか使えません。";
+      }
     }
     if ("found-pick".equals(key)) {
       return "Sent the prize to the inventory.";
     }
     if ("dropped-pick".equals(key)) {
       return "Your inventory was full, so the prize was dropped at your feet.";
+    }
+    if ("wrong-capsule".equals(key)) {
+      return "This ticket can only be used at {0}.";
     }
     return "";
   }

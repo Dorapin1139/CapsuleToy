@@ -14,3 +14,4 @@ not-found-chest2: "/capsuletoy modify <capsuletoy_name>でチェストをセッ�
 not-found-pick: "ハズレました。"
 found-pick: "賞品をインベントリに送りました。"
 dropped-pick: "インベントリが一杯なので、足元に落としました。"
+wrong-capsule: "この券は {0} でしか使えません。"

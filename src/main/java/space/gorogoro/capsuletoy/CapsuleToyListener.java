@@ -138,16 +138,26 @@ public class CapsuleToyListener implements Listener{
       }
 
       List<String> lores = ticket.getItemMeta().getLore();
-      if( lores.size() != 3) {
+      if( lores.size() < 3) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("hold-the-ticket")));
         return;
       }
 
       String ticketCode = lores.get(2).replace(CapsuleToyCommand.PREFIX_TICKET_CODE, "");
       ticketCode = ticketCode.replace("CAPSLUETOY CODE:", "");
-      if(!capsuletoy.getDatabase().existsTicket(ticketCode)) {
+      String boundName = capsuletoy.getDatabase().findTicketCapsule(ticketCode);
+      if(boundName == null) {
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("not-found-ticket-code")));
         return;
+      }
+      if(!boundName.isEmpty()) {
+        String signName = capsuletoy.getDatabase().getCapsuleToyName(signLoc);
+        if(!boundName.equals(signName)) {
+          String message = CapsuleToyUtility.configMessage(capsuletoy, "wrong-capsule");
+          message = message.replace("{0}", boundName);
+          CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));
+          return;
+        }
       }
 
       Chest chest = capsuletoy.getDatabase().getCapsuleToyChest(signLoc);

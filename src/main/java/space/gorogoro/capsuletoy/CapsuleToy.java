@@ -37,9 +37,14 @@ public class CapsuleToy extends JavaPlugin{
     return database;
   }
 
-  // 番号を登録したコード付きの券を 1 枚作る。所持品へは入れない
+  // 番号だけの券。どの看板でも使える。所持品へは入れない
   public ItemStack createCodedTicket() {
-    return CapsuleToyUtility.createCodedTicket(this);
+    return CapsuleToyUtility.createCodedTicket(this, null);
+  }
+
+  // 指定した名前の看板でしか使えない券。所持品へは入れない
+  public ItemStack createCodedTicket(String capsuleName) {
+    return CapsuleToyUtility.createCodedTicket(this, capsuleName);
   }
 
   /**
@@ -148,12 +153,6 @@ public class CapsuleToy extends JavaPlugin{
               command.ticket(p);
             }
             hideUseageFlag = true;
-          }
-          break;
-
-        case "stackticket":
-          if((sender instanceof BlockCommandSender) || (sender instanceof ConsoleCommandSender) || sender.isOp()) {
-            hideUseageFlag = command.stackTicket();
           }
           break;
 

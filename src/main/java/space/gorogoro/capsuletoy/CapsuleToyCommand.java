@@ -134,7 +134,7 @@ public class CapsuleToyCommand {
       return false;
     }
 
-    ItemStack ticket = CapsuleToyUtility.createCodedTicket(capsuletoy);
+    ItemStack ticket = CapsuleToyUtility.createCodedTicket(capsuletoy, null);
     if (ticket == null) {
       CapsuleToyUtility.sendMessage(sender, "Failure generate ticket code.");
       return false;
@@ -142,15 +142,6 @@ public class CapsuleToyCommand {
     p.getInventory().setItem(emptySlot, ticket);
     
     CapsuleToyUtility.sendMessage(sender, "Issue a ticket. player_name=" + p.getDisplayName());
-    return true;
-  }
-
-  /**
-   * 重なる券は渡さない。
-   * @return boolean true:Success false:Failure
-   */
-  public boolean stackTicket() {
-    CapsuleToyUtility.sendMessage(sender, "重なる券は使いません。");
     return true;
   }
 

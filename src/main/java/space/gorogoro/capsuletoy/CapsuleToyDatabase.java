@@ -181,7 +181,8 @@ public class CapsuleToyDatabase {
         + ");"
       );
       stmt.executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS ticket_code_uindex ON ticket (ticket_code);");
-    
+      addTicketCapsuleColumn(stmt);
+
       closeStmt(stmt);
 
       refreshCache();
@@ -560,44 +561,56 @@ public class CapsuleToyDatabase {
    * @return String|null ticketCode
    */
   public String getTicket() {
-    return getTicket(0);
+    return getTicket(null);
   }
-  
-  /**
-   * Issue a ticket
-   * @param Player player
-   * @param Integer countRetry
-   * @return String|null ticketCode
-   */
-  private String getTicket(Integer countRetry) {
-    PreparedStatement prepStmt = null;
-    ResultSet rs = null;
-    String ticketCode = null;
-    try {
-      if(countRetry > 3) {
-        return null;
-      }
-      countRetry++;      
-      String curTicketCode = CapsuleToyUtility.generateCode();
-      if(existsTicket(curTicketCode)){
-        return getTicket(countRetry);
-      }
 
-      prepStmt = getCon().prepareStatement("INSERT INTO ticket(ticket_code) VALUES (?);");
-      prepStmt.setString(1, curTicketCode);
+  // capsuleName が空なら、どの看板でも使える番号にする
+  public String getTicket(String capsuleName) {
+    return issueTicket(capsuleName, 0);
+  }
+
+  private void addTicketCapsuleColumn(Statement stmt) throws SQLException {
+    ResultSet rs = null;
+    try {
+      rs = stmt.executeQuery("PRAGMA table_info(ticket);");
+      while (rs.next()) {
+        if ("capsuletoy_name".equalsIgnoreCase(rs.getString(2))) {
+          return;
+        }
+      }
+    } finally {
+      closeRs(rs);
+    }
+    stmt.executeUpdate("ALTER TABLE ticket ADD COLUMN capsuletoy_name TEXT;");
+  }
+
+  private String issueTicket(String capsuleName, int countRetry) {
+    if (countRetry > 3) {
+      return null;
+    }
+    PreparedStatement prepStmt = null;
+    try {
+      String curTicketCode = CapsuleToyUtility.generateCode();
+      if (existsTicket(curTicketCode)) {
+        return issueTicket(capsuleName, countRetry + 1);
+      }
+      if (capsuleName == null || capsuleName.isEmpty()) {
+        prepStmt = getCon().prepareStatement("INSERT INTO ticket(ticket_code) VALUES (?);");
+        prepStmt.setString(1, curTicketCode);
+      } else {
+        prepStmt = getCon().prepareStatement("INSERT INTO ticket(ticket_code, capsuletoy_name) VALUES (?, ?);");
+        prepStmt.setString(1, curTicketCode);
+        prepStmt.setString(2, capsuleName);
+      }
       prepStmt.addBatch();
       prepStmt.executeBatch();
-      closeRs(rs);
-      closePrepStmt(prepStmt);
-      ticketCode = curTicketCode;
-      
+      return curTicketCode;
     } catch (SQLException e) {
       CapsuleToyUtility.logStackTrace(e);
     } finally {
-      closeRs(rs);
       closePrepStmt(prepStmt);
     }
-    return ticketCode;
+    return null;
   }
   
   /**
@@ -626,5 +639,30 @@ public class CapsuleToyDatabase {
       closePrepStmt(prepStmt);
     }
     return false;
+  }
+
+  // 券が無いときは null。名前が無い券は空文字
+  public String findTicketCapsule(String ticketCode) {
+    PreparedStatement prepStmt = null;
+    ResultSet rs = null;
+    try {
+      prepStmt = getCon().prepareStatement("SELECT capsuletoy_name FROM ticket WHERE ticket_code = ?;");
+      prepStmt.setString(1, ticketCode);
+      rs = prepStmt.executeQuery();
+      if (!rs.next()) {
+        return null;
+      }
+      String name = rs.getString("capsuletoy_name");
+      if (name == null) {
+        return "";
+      }
+      return name;
+    } catch (SQLException e) {
+      CapsuleToyUtility.logStackTrace(e);
+    } finally {
+      closeRs(rs);
+      closePrepStmt(prepStmt);
+    }
+    return null;
   }
 }
