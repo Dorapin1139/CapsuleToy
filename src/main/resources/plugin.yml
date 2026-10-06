@@ -14,7 +14,6 @@ commands:
       /<command> modify <capsuletoy_name> - Modify a capsuletoy
       /<command> delete <capsuletoy_name> - Delete a capsuletoy
       /<command> ticket <player_name> - Issue a ticket
-      /<command> stackticket <player_name> [amount] - Give stackable infernal capsule toy tickets
   capsuletoy list:
     description: List all capsuletoy
     usage: /<command> list
@@ -27,6 +26,3 @@ commands:
   capsuletoy ticket:
     description: Issue a ticket
     usage: /<command> ticket <player_name>
-  capsuletoy stackticket:
-    description: Give stackable infernal capsule toy tickets
-    usage: /<command> stackticket <player_name> [amount]

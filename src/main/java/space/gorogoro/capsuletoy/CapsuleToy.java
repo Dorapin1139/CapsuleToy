@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 
 import org.bukkit.command.BlockCommandSender;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -34,6 +35,11 @@ public class CapsuleToy extends JavaPlugin{
    */
   public CapsuleToyDatabase getDatabase() {
     return database;
+  }
+
+  // 番号を登録したコード付きの券を 1 枚作る。所持品へは入れない
+  public ItemStack createCodedTicket() {
+    return CapsuleToyUtility.createCodedTicket(this);
   }
 
   /**

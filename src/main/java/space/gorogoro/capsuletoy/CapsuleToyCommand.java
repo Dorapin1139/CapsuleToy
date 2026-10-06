@@ -134,21 +134,11 @@ public class CapsuleToyCommand {
       return false;
     }
 
-    String ticketCode = capsuletoy.getDatabase().getTicket();
-    if(ticketCode == null) {
+    ItemStack ticket = CapsuleToyUtility.createCodedTicket(capsuletoy);
+    if (ticket == null) {
       CapsuleToyUtility.sendMessage(sender, "Failure generate ticket code.");
       return false;
     }
-
-    ItemStack ticket = new ItemStack(Material.PAPER, 1);
-    ItemMeta im = ticket.getItemMeta();
-    im.setDisplayName(ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("ticket-display-name")));
-    ArrayList<String> lore = new ArrayList<String>();
-    lore.add(ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("ticket-lore1")));
-    lore.add(ChatColor.translateAlternateColorCodes('&', capsuletoy.getConfig().getString("ticket-lore2")));
-    lore.add(String.format(PREFIX_TICKET_CODE+"%s", ticketCode));
-    im.setLore(lore);
-    ticket.setItemMeta(im);
     p.getInventory().setItem(emptySlot, ticket);
     
     CapsuleToyUtility.sendMessage(sender, "Issue a ticket. player_name=" + p.getDisplayName());
@@ -156,43 +146,11 @@ public class CapsuleToyCommand {
   }
 
   /**
-   * 重なる infernalカプセルトイ券を渡す。1 から 64 枚。
+   * 重なる券は渡さない。
    * @return boolean true:Success false:Failure
    */
   public boolean stackTicket() {
-    if (args.length < 2 || args.length > 3) {
-      return false;
-    }
-
-    int amount = 1;
-    if (args.length == 3) {
-      try {
-        amount = Integer.parseInt(args[2]);
-      } catch (NumberFormatException ex) {
-        CapsuleToyUtility.sendMessage(sender, "枚数は 1 から 64 です。");
-        return true;
-      }
-    }
-    if (amount < 1 || amount > 64) {
-      CapsuleToyUtility.sendMessage(sender, "枚数は 1 から 64 です。");
-      return true;
-    }
-
-    ArrayList<Player> targets = CapsuleToyUtility.getTarget(capsuletoy, args[1], sender);
-    if (targets.isEmpty()) {
-      CapsuleToyUtility.sendMessage(sender, "プレイヤーが見つかりません。");
-      return true;
-    }
-
-    ItemStack ticket = CapsuleToyUtility.createStackTicket(capsuletoy, amount);
-    for (Player p : targets) {
-      boolean stored = CapsuleToyUtility.giveOrDrop(p, ticket.clone());
-      if (stored) {
-        CapsuleToyUtility.sendMessage(sender, "infernalカプセルトイ券を渡しました。 player_name=" + p.getDisplayName() + " amount=" + amount);
-      } else {
-        CapsuleToyUtility.sendMessage(sender, "インベントリが一杯なので足元に落としました。 player_name=" + p.getDisplayName() + " amount=" + amount);
-      }
-    }
+    CapsuleToyUtility.sendMessage(sender, "重なる券は使いません。");
     return true;
   }
 
