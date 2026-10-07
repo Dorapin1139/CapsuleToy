@@ -564,7 +564,7 @@ public class CapsuleToyDatabase {
     return getTicket(null);
   }
 
-  // capsuleName が空なら、infernal 以外の看板で使える番号にする
+  // capsuleName が空なら、名前の無い番号にする。使える看板は named-ticket-only で決まる
   public String getTicket(String capsuleName) {
     return issueTicket(capsuleName, 0);
   }

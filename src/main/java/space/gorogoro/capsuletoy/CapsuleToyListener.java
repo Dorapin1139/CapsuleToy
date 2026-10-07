@@ -158,7 +158,7 @@ public class CapsuleToyListener implements Listener{
           CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));
           return;
         }
-      } else if("infernal".equals(signName)) {
+      } else if(capsuletoy.requiresNamedTicket(signName)) {
         String message = CapsuleToyUtility.configMessage(capsuletoy, "needs-named-ticket");
         message = message.replace("{0}", signName);
         CapsuleToyUtility.sendMessage(p, ChatColor.translateAlternateColorCodes('&', message));

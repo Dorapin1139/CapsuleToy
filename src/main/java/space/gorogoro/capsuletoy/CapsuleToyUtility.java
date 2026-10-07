@@ -257,11 +257,19 @@ public class CapsuleToyUtility {
   }
 
   private static YamlConfiguration fileConfig;
-  private static long fileStamp = Long.MIN_VALUE;
+
+  // 起動時と /capsuletoy reload だけで config.yml を読む
+  public static void loadMessages(CapsuleToy plugin) {
+    File file = new File(plugin.getDataFolder(), "config.yml");
+    fileConfig = YamlConfiguration.loadConfiguration(file);
+  }
 
   // config.yml に書いてあればその文。無いときは、ほかの文が日本語なら日本語、それ以外は英語
   public static String configMessage(CapsuleToy plugin, String key) {
-    YamlConfiguration file = readConfigFile(plugin);
+    if (fileConfig == null) {
+      loadMessages(plugin);
+    }
+    YamlConfiguration file = fileConfig;
     if (file.contains(key)) {
       String value = file.getString(key);
       if (value != null) {
@@ -295,16 +303,6 @@ public class CapsuleToyUtility {
       return "This capsule toy accepts only a {0} ticket.";
     }
     return "";
-  }
-
-  private static YamlConfiguration readConfigFile(CapsuleToy plugin) {
-    File file = new File(plugin.getDataFolder(), "config.yml");
-    long stamp = file.lastModified();
-    if (fileConfig == null || stamp != fileStamp) {
-      fileConfig = YamlConfiguration.loadConfiguration(file);
-      fileStamp = stamp;
-    }
-    return fileConfig;
   }
 
   private static boolean usesJapanese(YamlConfiguration file) {

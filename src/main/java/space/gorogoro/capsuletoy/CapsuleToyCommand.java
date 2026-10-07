@@ -151,6 +151,7 @@ public class CapsuleToyCommand {
    */
   public boolean reload() {
     capsuletoy.reloadConfig();
+    capsuletoy.loadSettings();
     CapsuleToyUtility.sendMessage(sender, "reloaded.");
     return true;
   }
